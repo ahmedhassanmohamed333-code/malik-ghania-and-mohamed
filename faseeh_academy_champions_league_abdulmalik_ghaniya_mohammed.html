@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faseeh Academy — Champions League (Abdulmalik, Ghaniya & Mohammed)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      color: #f8fafc;
+      min-height: 100vh;
+    }
+    .font-arabic {
+      font-family: 'Amiri', serif;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.78);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .gold-glow {
+      box-shadow: 0 0 25px rgba(251, 191, 36, 0.35);
+    }
+    .letter-tile {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .letter-tile:hover {
+      transform: translateY(-4px) scale(1.05);
+    }
+    .spin-wheel {
+      transition: transform 2.5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: popIn 0.28s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="p-3 md:p-6 select-none">
+
+  <!-- Top Header -->
+  <header class="max-w-7xl mx-auto mb-6 glass-card rounded-2xl p-4 md:p-5 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-2xl shadow-lg">
+        🏆
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-semibold border border-amber-400/30" id="lbl-academy">Faseeh Academy • Ustadh Ahmed Hassan</span>
+        </div>
+        <h1 class="text-xl md:text-2xl font-extrabold tracking-tight text-white mt-0.5" id="lbl-title">
+          Arabic & Quran Champions Arena
+        </h1>
+      </div>
+    </div>
+
+    <!-- Toolbar Controls -->
+    <div class="flex flex-wrap items-center gap-2">
+      <button id="btn-lang" onclick="toggleLanguage()" class="px-3.5 py-2 rounded-xl bg-indigo-600/80 hover:bg-indigo-500 text-xs md:text-sm font-semibold border border-indigo-400/30 transition flex items-center gap-1.5">
+        <span>🌐</span> <span id="lbl-lang-btn">Show Arabic Translation (ترجمة)</span>
+      </button>
+      <button id="btn-sound" onclick="toggleSound()" class="px-3.5 py-2 rounded-xl bg-slate-700/80 hover:bg-slate-600 text-xs md:text-sm font-semibold border border-slate-500/30 transition flex items-center gap-1.5">
+        <span id="sound-icon">🔊</span> <span id="lbl-sound">Sound: ON</span>
+      </button>
+      <button onclick="openVerseEditorModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-500 text-xs md:text-sm font-semibold border border-emerald-400/30 transition flex items-center gap-1.5">
+        <span>✏️</span> <span id="lbl-edit-btn">Update Lesson / Verses</span>
+      </button>
+      <button onclick="triggerMegaParty('Champions Party Time! 🥳🎉')" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white font-extrabold text-xs md:text-sm shadow-lg transition flex items-center gap-1.5">
+        <span>🎉</span> <span>Party Celebration!</span>
+      </button>
+      <button onclick="openPodiumModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs md:text-sm shadow-lg transition flex items-center gap-1.5">
+        <span>👑</span> <span id="lbl-finish-btn">End Class & Crown Champions</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Grid: Left/Top Contestants + Right/Bottom Interactive Tabs -->
+  <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Contestants Scoreboard Column (4 cols on desktop) -->
+    <section class="lg:col-span-5 flex flex-col gap-4">
+      <div class="glass-card rounded-2xl p-4 border border-slate-700/60">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+            <span>⚡</span> <span id="lbl-live-standings">Live Standings & Class Performance</span>
+          </h2>
+          <button onclick="resetAllScores()" class="text-xs text-slate-400 hover:text-rose-400 underline transition" id="lbl-reset-scores">Reset Scores</button>
+        </div>
+
+        <!-- Active Buzzer / Turn Indicator -->
+        <div class="mb-4 p-3 rounded-xl bg-slate-900/90 border border-indigo-500/30 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400" id="lbl-selected-student">Selected Challenger for Current Question:</div>
+            <div class="text-base font-bold text-amber-300 mt-0.5" id="active-student-banner">🎯 🏋️‍♂️💪 Abdulmalik (عبدالملك)</div>
+          </div>
+          <button onclick="pickRandomStudent()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold transition shadow">
+            🎲 Random Pick
+          </button>
+        </div>
+
+        <!-- 3 Student Cards Container -->
+        <div id="students-container" class="space-y-3.5"></div>
+      </div>
+
+      <!-- Recent Activity Log -->
+      <div class="glass-card rounded-2xl p-4 border border-slate-700/60">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">📜 Live Action Log</h3>
+          <span class="text-xs text-slate-500">Auto-saved for GitHub</span>
+        </div>
+        <div id="action-log" class="space-y-1.5 max-h-40 overflow-y-auto text-xs text-slate-300 pr-1"></div>
+      </div>
+    </section>
+
+    <!-- Interactive Game Arena Column (7 cols on desktop) -->
+    <section class="lg:col-span-7 flex flex-col gap-4">
+
+      <!-- Mode Navigation Tabs -->
+      <nav class="glass-card rounded-2xl p-2 flex flex-wrap gap-1.5">
+        <button onclick="switchTab('words')" id="tab-words" class="flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow">
+          <span>📖</span> <span>Quran & Tashkeel</span>
+        </button>
+        <button onclick="switchTab('verses')" id="tab-verses" class="flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-1.5 text-slate-300 hover:bg-slate-800">
+          <span>📜</span> <span>Verses & Quiz</span>
+        </button>
+        <button onclick="switchTab('riddles')" id="tab-riddles" class="flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-1.5 text-slate-300 hover:bg-slate-800">
+          <span>🧩</span> <span>Riddles & Jokes</span>
+        </button>
+        <button onclick="switchTab('gifts')" id="tab-gifts" class="flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-1.5 text-slate-300 hover:bg-slate-800">
+          <span>🎁</span> <span>Gifts & Lucky Draw</span>
+        </button>
+        <button onclick="switchTab('minigame')" id="tab-minigame" class="flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-1.5 text-slate-300 hover:bg-slate-800">
+          <span>🎮</span> <span>Connect 4 / X-O</span>
+        </button>
+      </nav>
+
+      <!-- TAB 1: QURAN & ARABIC WORDS WITH TASHKEEL (PRONUNCIATION & SPELLING) -->
+      <div id="view-words" class="glass-card rounded-2xl p-5 flex-1 flex flex-col justify-between animate-pop">
+        <div>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-700/70">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Quranic & Arabic Tashkeel Lab</span>
+              <h2 class="text-lg font-bold text-white">Spell, Pronounce & Master Harakat!</h2>
+            </div>
+            <!-- Point Stake Selector -->
+            <div class="flex items-center gap-1 bg-slate-900/90 p-1.5 rounded-xl border border-slate-700">
+              <span class="text-xs text-slate-400 px-2">Question Value:</span>
+              <button onclick="setQuestionStake(1)" id="stake-1" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300">1 pt</button>
+              <button onclick="setQuestionStake(2)" id="stake-2" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500 text-slate-950">2 pts</button>
+              <button onclick="setQuestionStake(5)" id="stake-5" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300">5 pts</button>
+              <button onclick="setQuestionStake(10)" id="stake-10" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300">10 pts</button>
+            </div>
+          </div>
+
+          <!-- Word Selector Pills -->
+          <div id="word-pills" class="flex flex-wrap gap-1.5 mb-5"></div>
+
+          <!-- Active Word Display Card -->
+          <div class="bg-slate-900/95 border-2 border-indigo-500/40 rounded-2xl p-6 text-center relative overflow-hidden shadow-inner">
+            <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+              <span id="word-category-badge" class="px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold">Quranic Word</span>
+              <span id="word-difficulty-badge" class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-semibold">Reward: +2 pts & +1 💎</span>
+            </div>
+
+            <!-- Huge Arabic Word with Full Tashkeel -->
+            <div id="word-arabic-display" dir="rtl" class="font-arabic text-5xl md:text-7xl font-bold text-amber-300 my-5 tracking-wide leading-relaxed select-text">
+              فَسَيَكْفِيكَهُمُ
+            </div>
+
+            <!-- Phonetic & English Meaning -->
+            <div class="space-y-1 mt-3">
+              <div class="text-sm md:text-base font-semibold text-indigo-300">
+                🔊 Pronunciation Guide: <span id="word-translit" class="text-white font-mono bg-slate-800 px-2.5 py-0.5 rounded">Fa-sa-yak-fee-ka-hu-mu</span>
+              </div>
+              <div class="text-sm text-emerald-300 font-medium" id="word-meaning-en">
+                English Meaning: "And Allah will be sufficient for you against them" (Surah Al-Baqarah 2:137)
+              </div>
+              <div id="word-meaning-ar" dir="rtl" class="text-sm text-amber-200/90 font-arabic hidden mt-1">
+                المعنى بالعربية: الله يكفيك ويحميك منهم (سورة البقرة) — تدريب على الحركات المتتالية والمدود.
+              </div>
+            </div>
+
+            <!-- Interactive Syllable / Harakat Breakdown Tiles -->
+            <div class="mt-6 pt-4 border-t border-slate-800">
+              <div class="text-xs text-slate-400 mb-2.5">👇 Click each syllable tile as the student spells & pronounces it aloud:</div>
+              <div id="word-syllables" dir="rtl" class="flex flex-wrap items-center justify-center gap-2.5"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Award / Action Footer -->
+        <div class="mt-5 pt-4 border-t border-slate-700/60 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <button onclick="prevWord()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition">⬅ Previous</button>
+            <button onclick="nextWord()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition">Next Word ➡</button>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="awardCurrentStake(true)" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-xs md:text-sm shadow-lg transition">
+              ✅ Correct Spelling / Reading! (+<span id="btn-stake-val">2</span> pts & +1 💎)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: LESSON VERSES & COMPREHENSION QUIZ (Editable Every Class) -->
+      <div id="view-verses" class="glass-card rounded-2xl p-5 flex-1 flex flex-col justify-between hidden animate-pop">
+        <div>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-700/70">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Step-by-Step Verse Recitation & Vocabulary</span>
+              <h2 class="text-lg font-bold text-white" id="lesson-title-heading">Today's Verses & Poetry Challenge</h2>
+            </div>
+            <button onclick="openVerseEditorModal()" class="px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-400/40 text-emerald-200 text-xs font-bold transition">
+              ✏️ Paste New Verses
+            </button>
+          </div>
+
+          <!-- Verse Progress Bar -->
+          <div class="flex items-center justify-between text-xs text-slate-400 mb-3">
+            <span id="verse-counter">Verse 1 of 4</span>
+            <span>Recite each verse clearly (+2 pts) & answer the vocabulary question (+2 pts)!</span>
+          </div>
+
+          <!-- Verse Display Box -->
+          <div class="bg-slate-900/95 border-2 border-amber-500/40 rounded-2xl p-6 text-center shadow-inner mb-4">
+            <p id="verse-arabic-text" dir="rtl" class="font-arabic text-3xl md:text-4xl font-bold text-amber-300 leading-loose mb-3 select-text"></p>
+            <p id="verse-english-text" class="text-sm md:text-base text-indigo-200 italic mb-2"></p>
+            <p id="verse-vocab-note" class="text-xs text-emerald-300 bg-emerald-950/60 border border-emerald-700/40 rounded-lg py-1.5 px-3 inline-block"></p>
+
+            <!-- Recitation Counters for the 3 Students -->
+            <div class="mt-5 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-center gap-2">
+              <button onclick="awardVerseRecitation(0)" class="px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600 border border-indigo-400/40 text-xs font-bold transition">
+                🎤 Abdulmalik Recited (+2 pts)
+              </button>
+              <button onclick="awardVerseRecitation(1)" class="px-3 py-1.5 rounded-xl bg-pink-600/30 hover:bg-pink-600 border border-pink-400/40 text-xs font-bold transition">
+                🎤 Ghaniya Recited (+2 pts)
+              </button>
+              <button onclick="awardVerseRecitation(2)" class="px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600 border border-emerald-400/40 text-xs font-bold transition">
+                🎤 Mohammed Recited (+2 pts)
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Quiz Question on Current Verse -->
+          <div class="bg-slate-800/80 rounded-2xl p-4 border border-slate-700">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase text-indigo-300">🎯 Verse Vocabulary & Meaning Quiz (+2 pts)</span>
+              <span class="text-xs text-amber-300" id="verse-quiz-status">Select an answer for the active student</span>
+            </div>
+            <p id="verse-quiz-q" class="text-sm md:text-base font-bold text-white mb-3"></p>
+            <div id="verse-quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between">
+          <button onclick="prevVerse()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition">⬅ Previous Verse</button>
+          <button onclick="nextVerse()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition">Next Verse ➡</button>
+        </div>
+      </div>
+
+      <!-- TAB 3: RIDDLES (FAWAZEER) & HILARIOUS JOKES -->
+      <div id="view-riddles" class="glass-card rounded-2xl p-5 flex-1 flex flex-col justify-between hidden animate-pop">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+          <!-- Interactive Riddle Card -->
+          <div class="bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold">🧩 Brain Riddle (فزورة)</span>
+                <span id="riddle-points-badge" class="text-xs font-bold text-amber-400">+5 Points & +1 💎</span>
+              </div>
+              <p id="riddle-en" class="text-base md:text-lg font-bold text-white leading-relaxed mb-2"></p>
+              <p id="riddle-ar" dir="rtl" class="text-base font-arabic text-amber-200/90 leading-relaxed mb-4"></p>
+
+              <div id="riddle-answer-box" class="hidden p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-center my-3 animate-pop">
+                <div class="text-xs text-emerald-300 uppercase font-bold">Answer (الإجابة):</div>
+                <div id="riddle-ans-text" class="text-lg font-extrabold text-white mt-0.5"></div>
+              </div>
+            </div>
+
+            <div class="space-y-2 pt-3 border-t border-slate-800">
+              <div class="flex gap-2">
+                <button onclick="revealRiddleAnswer()" class="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold transition">
+                  👀 Reveal Answer
+                </button>
+                <button onclick="nextRiddle()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition">
+                  Next ➡
+                </button>
+              </div>
+              <button onclick="awardRiddleWinner()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs transition shadow">
+                🏆 Award Riddle Points to Active Student!
+              </button>
+            </div>
+          </div>
+
+          <!-- Funniest Class Joke Generator -->
+          <div class="bg-slate-900/90 border border-amber-500/40 rounded-2xl p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold">😂 Comedy & Laugh Break</span>
+                <span class="text-xs text-slate-400">Keep Everyone Awake!</span>
+              </div>
+              <p id="joke-setup-en" class="text-base font-bold text-white mb-2"></p>
+              <p id="joke-setup-ar" dir="rtl" class="text-base font-arabic text-amber-200/90 mb-4"></p>
+
+              <div id="joke-punchline-box" class="p-3.5 rounded-xl bg-amber-500/15 border border-amber-400/40 text-amber-200 text-sm font-semibold">
+                <div id="joke-punch-en" class="mb-1"></div>
+                <div id="joke-punch-ar" dir="rtl" class="font-arabic text-base"></div>
+              </div>
+            </div>
+
+            <div class="space-y-2 pt-3 border-t border-slate-800 mt-4">
+              <div class="flex gap-2">
+                <button onclick="playLaughSound()" class="flex-1 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-xs font-bold transition shadow">
+                  🤣 Play Laugh & Drumroll!
+                </button>
+                <button onclick="nextJoke()" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition">
+                  😂 Another Joke ➡
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: MYSTERY GIFT BOXES & LUCKY WHEEL -->
+      <div id="view-gifts" class="glass-card rounded-2xl p-5 flex-1 flex flex-col justify-between hidden animate-pop">
+        <div>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-700/70">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-pink-400">Surprise Rewards, Gems & Random Draw</span>
+              <h2 class="text-lg font-bold text-white">Mystery Gift Boxes & Lucky Spinner</h2>
+            </div>
+            <button onclick="resetGiftBoxes()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition">
+              🔄 Refill All 6 Boxes
+            </button>
+          </div>
+
+          <p class="text-xs text-slate-300 mb-4">
+            Select a student on the left scoreboard (or click <strong>Random Pick</strong>), then let them open a Mystery Box for surprise Points, Gems (💎), or Double Score!
+          </p>
+
+          <!-- 6 Mystery Chests Grid -->
+          <div id="gift-boxes-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5"></div>
+
+          <!-- Lucky Randomizer Wheel Bar -->
+          <div class="bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div class="text-xs uppercase font-bold text-indigo-400">🎰 Random Lucky Draw (سحب عشوائي)</div>
+              <div id="lucky-draw-result" class="text-base font-extrabold text-white mt-1">
+                Click "Spin Lucky Draw" to pick a surprise winner & prize!
+              </div>
+            </div>
+            <button onclick="triggerLuckyDraw()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-extrabold text-xs md:text-sm shadow-lg transition">
+              🎰 Spin Lucky Draw!
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: MINI-GAMES (CONNECT 4 & TIC-TAC-TOE FOR REWARD TURNS) -->
+      <div id="view-minigame" class="glass-card rounded-2xl p-5 flex-1 flex flex-col justify-between hidden animate-pop">
+        <div>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-700/70">
+            <div class="flex items-center gap-2">
+              <button onclick="switchMiniGame('connect4')" id="btn-mg-c4" class="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-extrabold transition">🔴 Connect 4 (3 Players)</button>
+              <button onclick="switchMiniGame('xo')" id="btn-mg-xo" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold transition">❌⭕ Quick X-O Duel</button>
+            </div>
+            <span class="text-xs text-emerald-300 font-semibold">Winner gets +5 Bonus Points & +2 💎!</span>
+          </div>
+
+          <!-- Connect 4 Container -->
+          <div id="mg-connect4-box" class="flex flex-col items-center">
+            <div class="flex items-center justify-between w-full max-w-md mb-3 text-xs font-bold">
+              <span id="c4-turn-indicator" class="text-amber-300">Turn: Abdulmalik (🔴 Red)</span>
+              <button onclick="initConnect4()" class="text-slate-400 hover:text-white underline">Reset Board</button>
+            </div>
+            <div id="c4-grid" class="bg-indigo-950 p-3 rounded-2xl border-2 border-indigo-500/50 grid grid-cols-7 gap-1.5 shadow-inner"></div>
+          </div>
+
+          <!-- X-O Container -->
+          <div id="mg-xo-box" class="hidden flex-col items-center">
+            <div class="flex items-center justify-between w-full max-w-xs mb-3 text-xs font-bold">
+              <span id="xo-turn-indicator" class="text-amber-300">Player X Turn</span>
+              <button onclick="initXO()" class="text-slate-400 hover:text-white underline">Reset X-O</button>
+            </div>
+            <div id="xo-grid" class="grid grid-cols-3 gap-2 w-64 h-64 bg-slate-900 p-3 rounded-2xl border border-slate-700"></div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- MODAL 1: EDIT / PASTE NEW VERSES & WORDS FOR ANY LESSON -->
+  <div id="modal-editor" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="glass-card rounded-2xl max-w-2xl w-full p-6 border border-emerald-500/40 shadow-2xl animate-pop max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-700">
+        <div>
+          <h3 class="text-lg font-extrabold text-white">✏️ Lesson Customizer (تعديل الأبيات والكلمات بسهولة)</h3>
+          <p class="text-xs text-slate-400">Paste your new verses or Quranic/Arabic words with Tashkeel below—one per line!</p>
+        </div>
+        <button onclick="closeVerseEditorModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-amber-300 mb-1">
+            1. Lesson Verses / Ayahs (One verse per line — Format: Arabic Verse | English Translation | Key Vocabulary)
+          </label>
+          <textarea id="input-custom-verses" rows="5" dir="auto" class="w-full rounded-xl bg-slate-900 border border-slate-700 p-3 text-sm text-white font-arabic focus:border-amber-400 outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-emerald-300 mb-1">
+            2. Quranic & Tashkeel Spelling Words (One per line — Format: Arabic Word with Tashkeel | Pronunciation | Meaning)
+          </label>
+          <textarea id="input-custom-words" rows="5" dir="auto" class="w-full rounded-xl bg-slate-900 border border-slate-700 p-3 text-sm text-white font-arabic focus:border-emerald-400 outline-none"></textarea>
+        </div>
+      </div>
+
+      <div class="mt-6 flex items-center justify-end gap-3">
+        <button onclick="closeVerseEditorModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold">Cancel</button>
+        <button onclick="saveCustomLesson()" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg">
+          💾 Save & Update Game Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: FINAL PODIUM & 1ST, 2ND, 3RD PLACE TROPHY CEREMONY -->
+  <div id="modal-podium" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="glass-card rounded-3xl max-w-2xl w-full p-6 md:p-8 border-2 border-amber-400/50 shadow-2xl text-center animate-pop">
+      <div class="text-4xl mb-2">👑🎉🏆</div>
+      <h2 class="text-2xl md:text-3xl font-extrabold text-white">Today's Champions Podium!</h2>
+      <p class="text-xs md:text-sm text-amber-300 mt-1 mb-6">Faseeh Academy — Official Results with Ustadh Ahmed Hassan</p>
+
+      <!-- Podium Places -->
+      <div id="podium-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-6"></div>
+
+      <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 text-xs text-slate-300 mb-6" id="podium-summary-text"></div>
+
+      <div class="flex flex-wrap justify-center gap-3">
+        <button onclick="playFanfare()" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-lg">
+          🎺 Play Victory Fanfare!
+        </button>
+        <button onclick="closePodiumModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs">
+          Back to Classroom
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mega Victory Celebration Overlay -->
+  <div id="party-overlay" onclick="closePartyOverlay()" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm cursor-pointer">
+    <div class="text-center p-8 rounded-3xl bg-gradient-to-br from-indigo-900/95 via-purple-900/95 to-pink-900/95 border-4 border-amber-400 shadow-2xl max-w-lg w-full mx-4 animate-pop">
+      <div id="party-emojis" class="text-6xl mb-3 animate-bounce">🥳🎉👑🎆</div>
+      <div id="party-title" class="text-3xl md:text-4xl font-black text-amber-300 tracking-wide mb-2">SUPER VICTORY!</div>
+      <div id="party-subtitle" class="text-xl font-extrabold text-white mb-4"></div>
+      <div class="inline-block px-4 py-1.5 rounded-full bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-widest">
+        🎉 Click anywhere to continue 🎉
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast-box" class="fixed bottom-5 right-5 z-50 hidden px-5 py-3 rounded-2xl bg-slate-900/95 border-2 border-amber-400 text-white shadow-2xl flex items-center gap-3 animate-pop">
+    <span id="toast-icon" class="text-2xl">🌟</span>
+    <div>
+      <div id="toast-title" class="text-xs font-bold uppercase text-amber-400">Points Updated!</div>
+      <div id="toast-msg" class="text-sm font-semibold"></div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. AUDIO SYNTHESIZER (Web Audio API)
+    // ==========================================
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type, duration, delay = 0) {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+        gain.gain.setValueAtTime(0.14, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + duration);
+      } catch (e) {}
+    }
+
+    function playSuccessSound() {
+      playTone(523.25, 'triangle', 0.15, 0);
+      playTone(659.25, 'triangle', 0.15, 0.12);
+      playTone(783.99, 'triangle', 0.25, 0.24);
+      playTone(1046.5, 'sine', 0.35, 0.36);
+    }
+
+    function playPenaltySound() {
+      playTone(300, 'sawtooth', 0.2, 0);
+      playTone(210, 'sawtooth', 0.35, 0.18);
+    }
+
+    function playLaughSound() {
+      playTone(440, 'sine', 0.12, 0);
+      playTone(554, 'sine', 0.12, 0.12);
+      playTone(659, 'sine', 0.12, 0.24);
+      playTone(880, 'triangle', 0.3, 0.36);
+      showToast('😂 HaHaHa!', 'Class Comedy Boost Activated!', '🤣');
+    }
+
+    function playFanfare() {
+      const notes = [523.25, 659.25, 783.99, 1046.5, 987.77, 1046.5, 1318.5, 1567.98];
+      const delays = [0, 0.12, 0.24, 0.36, 0.50, 0.64, 0.78, 0.95];
+      notes.forEach((n, i) => playTone(n, 'triangle', 0.26, delays[i]));
+      fireConfettiCannon();
+    }
+
+    function fireConfettiBurst(particleCount = 90) {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: particleCount,
+          spread: 85,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    function fireConfettiCannon() {
+      if (typeof confetti !== 'function') return;
+      const duration = 2400;
+      const end = Date.now() + duration;
+      (function frame() {
+        confetti({
+          particleCount: 7,
+          angle: 60,
+          spread: 60,
+          origin: { x: 0, y: 0.65 }
+        });
+        confetti({
+          particleCount: 7,
+          angle: 120,
+          spread: 60,
+          origin: { x: 1, y: 0.65 }
+        });
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      })();
+    }
+
+    let partyTimer = null;
+    function triggerMegaParty(subtitleText, customAvatar = '🥳🎉👑🎆') {
+      playFanfare();
+      const overlay = document.getElementById('party-overlay');
+      document.getElementById('party-emojis').textContent = customAvatar + ' 🎉🎆👑';
+      document.getElementById('party-subtitle').textContent = subtitleText;
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+      if (partyTimer) clearTimeout(partyTimer);
+      partyTimer = setTimeout(() => {
+        closePartyOverlay();
+      }, 3400);
+    }
+
+    function closePartyOverlay() {
+      const overlay = document.getElementById('party-overlay');
+      overlay.classList.add('hidden');
+      overlay.classList.remove('flex');
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('sound-icon').textContent = soundEnabled ? '🔊' : '🔇';
+      document.getElementById('lbl-sound').textContent = soundEnabled ? 'Sound: ON' : 'Sound: OFF';
+    }
+
+    // ==========================================
+    // 2. GAME STATE: 3 STUDENTS & LESSON DATA
+    // ==========================================
+    let showArabicTranslation = true;
+    let activeStudentIndex = 0;
+    let currentStake = 2;
+
+    const defaultStudents = [
+      {
+        id: 0,
+        nameEn: "Abdulmalik",
+        nameAr: "عبدالملك",
+        titleEn: "Bodybuilding Champion",
+        titleAr: "بطل كمال الأجسام",
+        avatar: "🏋️‍♂️💪",
+        color: "from-indigo-500 to-blue-600",
+        badgeBg: "bg-indigo-500/20 text-indigo-300 border-indigo-400/30",
+        points: 0,
+        gems: 0,
+        streak: 0
+      },
+      {
+        id: 1,
+        nameEn: "Ghaniya",
+        nameAr: "غنية",
+        titleEn: "Brilliant Doctor",
+        titleAr: "الطبيبة المتألقة",
+        avatar: "👩‍⚕️🩺",
+        color: "from-pink-500 to-rose-600",
+        badgeBg: "bg-pink-500/20 text-pink-300 border-pink-400/30",
+        points: 0,
+        gems: 0,
+        streak: 0
+      },
+      {
+        id: 2,
+        nameEn: "Mohammed",
+        nameAr: "محمد",
+        titleEn: "The Smart & Skilled",
+        titleAr: "الذكي الماهر",
+        avatar: "🧠🚀",
+        color: "from-emerald-500 to-teal-600",
+        badgeBg: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+        points: 0,
+        gems: 0,
+        streak: 0
+      }
+    ];
+
+    let students = JSON.parse(JSON.stringify(defaultStudents));
+
+    // Quranic & Classical Arabic Words with Full Tashkeel for Spelling/Pronunciation
+    let wordsList = [
+      {
+        word: "فَسَيَكْفِيكَهُمُ",
+        translit: "Fa-sa-yak-fee-ka-hu-mu",
+        meaningEn: "Allah will suffice you against them (Surah Al-Baqarah 2:137)",
+        meaningAr: "الله يكفيك ويحميك منهم (أطول كلمة في القرآن حروفاً متصلة)",
+        category: "Quranic Masterpiece (10 pts worthy!)",
+        syllables: ["فَـ", "سَـ", "يَكْـ", "فِيـ", "كَـ", "هُـ", "مُ"]
+      },
+      {
+        word: "أَنُلْزِمُكُمُوهَا",
+        translit: "A-nul-zi-mu-ku-moo-haa",
+        meaningEn: "Shall we compel you to accept it? (Surah Hud 11:28)",
+        meaningAr: "هل نجبركم عليها وأنتم لها كارهون؟ (سورة هود)",
+        category: "Quranic Pronunciation Challenge",
+        syllables: ["أَ", "نُلْـ", "زِ", "مُـ", "كُـ", "مُو", "هَا"]
+      },
+      {
+        word: "لَيَسْتَخْلِفَنَّهُمْ",
+        translit: "La-yas-takh-li-fan-na-hum",
+        meaningEn: "He will surely grant them succession (Surah An-Nur 24:55)",
+        meaningAr: "ليمكننّ لهم في الأرض (تطبيق الشدة والسكون)",
+        category: "Quranic Tajweed & Shaddah",
+        syllables: ["لَـ", "يَسْـ", "تَخْـ", "لِـ", "فَنَّـ", "هُمْ"]
+      },
+      {
+        word: "الْمُسْتَضْعَفِينَ",
+        translit: "Al-mus-tad-'a-fee-na",
+        meaningEn: "Those who are considered weak / oppressed (Surah An-Nisa 4:75)",
+        meaningAr: "الضعفاء الذين بحاجة للنصرة (تدريب على الضاد والعين)",
+        category: "Deep Throat Letters (ض + ع)",
+        syllables: ["الْـ", "مُسْـ", "تَضْـ", "عَـ", "فِيـ", "نَ"]
+      },
+      {
+        word: "مُتَشَاكِسُونَ",
+        translit: "Mu-ta-shaa-ki-soo-na",
+        meaningEn: "Quarrelsome / conflicting partners (Surah Az-Zumar 39:29)",
+        meaningAr: "مختلفون متنازعون في آرائهم (سورة الزمر)",
+        category: "Quranic Rare Vocabulary",
+        syllables: ["مُـ", "تَـ", "شَا", "كِـ", "سُو", "نَ"]
+      },
+      {
+        word: "وَأَسْقَيْنَاكُمُوهُ",
+        translit: "Wa-as-qay-naa-ku-moo-hu",
+        meaningEn: "And We gave it to you to drink (Surah Al-Hijr 15:22)",
+        meaningAr: "وسقيناكم ذلك الماء العذب من السماء",
+        category: "Long Vowels (Madd Challenge)",
+        syllables: ["وَ", "أَسْـ", "قَيْـ", "نَا", "كُـ", "مُو", "هُ"]
+      },
+      {
+        word: "الْمُتَنَبِّيُّ الشَّاعِرُ",
+        translit: "Al-Mu-ta-nab-biy-yu Ash-Shaa-'i-ru",
+        meaningEn: "Al-Mutanabbi the Eloquent Poet",
+        meaningAr: "لقب شاعر العربية الشهير وتدريب على اللام القمرية والشمسية",
+        category: "Sun & Moon Letters (الـ)",
+        syllables: ["الْـ", "مُـ", "تَـ", "نَبِّـ", "يُّ", "الشَّا", "عِـ", "رُ"]
+      }
+    ];
+
+    let currentWordIndex = 0;
+
+    // Editable Verses & Comprehension Quiz
+    let versesList = [
+      {
+        arabic: "عَرَفْتُ الهَوَى مُذْ عَرَفْتُ هَوَاكَا ... وَأَغْلَقْتُ قَلْبِي عَمَّنْ سِوَاكَا",
+        english: "I knew true love since I knew Your love, and I closed my heart to all besides You.",
+        vocab: "مُذْ (Mudh) = Since | سِوَاكَا (Siwaka) = Other than You",
+        question: "What does the word «سِوَاكَا» (Siwaka) mean in this verse?",
+        options: ["Other than You (غيرك)", "My close friend", "In the morning", "Very quickly"],
+        correct: 0
+      },
+      {
+        arabic: "وَقُمْتُ أُنَاجِيكَ يَا مَنْ تَرَى ... خَفَايَا القُلُوبِ وَلَسْنَا نَرَاكَا",
+        english: "And I stood calling upon You privately, O One who sees the secrets of hearts while we do not see You.",
+        vocab: "أُنَاجِيكَ (Unajeeka) = Whisper in prayer | خَفَايَا (Khafaya) = Hidden secrets",
+        question: "What is the meaning of «خَفَايَا القُلُوبِ» (Khafaya al-Quloob)?",
+        options: ["Loud voices", "Hidden secrets of the hearts", "High mountains", "Fast horses"],
+        correct: 1
+      },
+      {
+        arabic: "إِذَا غَامَرْتَ فِي شَرَفٍ مَرُومِ ... فَلَا تَقْنَعْ بِمَا دُونَ النُّجُومِ",
+        english: "When you venture in pursuit of sought-after honor, do not be satisfied with anything less than the stars!",
+        vocab: "شَرَفٍ مَرُومِ = Noble sought goal | دُونَ النُّجُومِ = Below the stars",
+        question: "According to the poet, what should an ambitious person aim for?",
+        options: ["Nothing less than the stars (النُّجُومِ)", "Sleeping early in class", "Only easy tasks", "Staying at home"],
+        correct: 0
+      },
+      {
+        arabic: "وَقُلْ رَبِّ زِدْنِي عِلْمًا ... وَارْزُقْنِي فَهْمًا وَحِكْمَةً",
+        english: "And say: My Lord, increase me in knowledge (Surah Taha 20:114), and grant me understanding and wisdom.",
+        vocab: "زِدْنِي (Zidnee) = Increase me | عِلْمًا ('Ilman) = Knowledge",
+        question: "What does «زِدْنِي عِلْمًا» (Zidnee 'Ilman) ask Allah for?",
+        options: ["More sleep", "Increase me in knowledge", "Fewer homework questions", "More candy"],
+        correct: 1
+      }
+    ];
+
+    let currentVerseIndex = 0;
+
+    // Riddles (Fawazeer) in English & Arabic
+    const riddlesList = [
+      {
+        qEn: "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?",
+        qAr: "أتكلم بلا فم، وأسمع بلا أذن، وليس لي جسد، لكنني أحيا بالرياح والصدى.. فما أنا؟",
+        ans: "An Echo — الصَّدَى (As-Sada)"
+      },
+      {
+        qEn: "Which Arabic letter is pronounced from the deepest part of the throat and starts the word «عِلْم» (Knowledge)?",
+        qAr: "ما هو الحرف العربي الذي يخرج من وسط الحلق وتبدأ به كلمة (عِلْم)؟",
+        ans: "Letter 'Ayn — حَرْفُ العَيْنِ (ع)"
+      },
+      {
+        qEn: "The more of me there is, the less you can see. What am I?",
+        qAr: "كلما زاد وجودي في المكان، قلَّت رؤيتك للأشياء.. فما أنا؟",
+        ans: "Darkness — الظَّلَامُ (Az-Zalam)"
+      },
+      {
+        qEn: "I have keys but no locks, I have space but no room, you can enter but can't go outside. What am I?",
+        qAr: "لدي مفاتيح كثيرة بلا أقفال، ولدي مسطرة مسافة بلا غرف.. فما أنا؟",
+        ans: "A Keyboard — لَوْحَةُ المَفَاتِيحِ"
+      },
+      {
+        qEn: "What has to be broken before you can use it for breakfast?",
+        qAr: "ما هو الشيء الذي يجب أن تكسره أولاً قبل أن تطبخه وتأكله في الفطور؟",
+        ans: "An Egg — البَيْضَةُ (Al-Baydah)"
+      }
+    ];
+    let currentRiddleIndex = 0;
+
+    // Clean Classroom Jokes (Bilingual)
+    const jokesList = [
+      {
+        setupEn: "Teacher: 'Why are you late to Arabic class today?'",
+        setupAr: "الأستاذ: لماذا تأخرت عن حصة اللغة العربية اليوم؟",
+        punchEn: "Student: 'Because of a sign on the road that said: SCHOOL AHEAD, GO SLOW!' 😂",
+        punchAr: "الطالب: بسبب لوحة في الطريق مكتوب عليها: (امشِ ببطء، أمامك مدرسة!) 😂"
+      },
+      {
+        setupEn: "Why did the student eat his Arabic homework before Zoom class?",
+        setupAr: "لماذا أكل الطالب واجب اللغة العربية قبل الحصة؟",
+        punchEn: "Because Ustadh Ahmed said it was a 'piece of cake'! 🍰🤣",
+        punchAr: "لأن الأستاذ أحمد قال له: الواجب اليوم مثل قطعة الكيك! 🍰🤣"
+      },
+      {
+        setupEn: "Grammar Teacher: 'Abdulmalik, give me a sentence starting with I.' — Abdulmalik: 'I is...' — Teacher: 'No! Always say I am!'",
+        setupAr: "المعلم: أعطني جملة تبدأ بـ (I).. الطالب: I is.. المعلم: خطأ! قل دائماً (I am)!",
+        punchEn: "Abdulmalik: 'Okay! I am the ninth letter of the English alphabet!' 🧠😂",
+        punchAr: "الطالب: حسناً! (I am) هو الحرف التاسع في الأبجدية الإنجليزية! 🧠😂"
+      },
+      {
+        setupEn: "What happens when someone daydreams or falls asleep in our competition?",
+        setupAr: "ماذا يحدث لمن ينام أو يسرح في حصتنا التفاعلية؟",
+        punchEn: "The Alarm Rooster crows and eats 3 of their points! Wake up Champions! 🐓⏰",
+        punchAr: "يصيح ديك المنبه ويأكل ٣ نقاط من رصيده فوراً! صحصحوا يا أبطال! 🐓⏰"
+      }
+    ];
+    let currentJokeIndex = 0;
+
+    // Mystery Gift Boxes State
+    let giftBoxes = [];
+
+    // ==========================================
+    // 3. SCOREBOARD & STUDENT RENDER LOGIC
+    // ==========================================
+    function renderStudents() {
+      const container = document.getElementById('students-container');
+      // Only show ranks after someone actually scores points or gems
+      const anyScoreYet = students.some(s => (s.points + s.gems) > 0);
+      const sorted = [...students].sort((a, b) => (b.points + b.gems * 2) - (a.points + a.gems * 2));
+
+      container.innerHTML = students.map((st, idx) => {
+        const isSelected = idx === activeStudentIndex;
+        const studentTotal = st.points + st.gems * 2;
+        let rankBadge = '<span class="text-slate-400 font-medium">⏳ Ready to Compete</span>';
+        if (anyScoreYet && studentTotal > 0) {
+          const rank = sorted.findIndex(s => s.id === st.id) + 1;
+          rankBadge = rank === 1
+            ? '<span class="text-amber-300 font-bold">🥇 1st Place</span>'
+            : rank === 2
+            ? '<span class="text-slate-200 font-bold">🥈 2nd Place</span>'
+            : '<span class="text-orange-300 font-bold">🥉 3rd Place</span>';
+        }
+
+        return `
+          <div onclick="selectStudent(${idx})" class="cursor-pointer rounded-2xl p-3.5 transition-all border-2 ${isSelected ? 'bg-slate-800/95 border-amber-400 gold-glow' : 'bg-slate-900/75 border-slate-700/70 hover:border-slate-500'}">
+            <div class="flex items-center justify-between gap-2 mb-2.5">
+              <div class="flex items-center gap-2.5">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${st.color} flex items-center justify-center text-2xl shadow px-1">
+                  ${st.avatar}
+                </div>
+                <div>
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="font-extrabold text-base text-white">${st.nameEn}</span>
+                    <span class="font-arabic text-base text-amber-300">(${st.nameAr})</span>
+                    <span class="text-lg">${st.avatar}</span>
+                  </div>
+                  <div class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                    ${rankBadge}
+                    <span>•</span>
+                    <span>🔥 Streak: ${st.streak}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Points & Gems Display -->
+              <div class="flex items-center gap-2 text-right">
+                <div class="px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-400/30">
+                  <div class="text-[10px] uppercase text-amber-300 font-bold">Points</div>
+                  <div class="text-xl font-black text-amber-400">${st.points}</div>
+                </div>
+                <div class="px-2.5 py-1 rounded-xl bg-cyan-500/15 border border-cyan-400/30">
+                  <div class="text-[10px] uppercase text-cyan-300 font-bold">Gems</div>
+                  <div class="text-lg font-black text-cyan-300">💎 ${st.gems}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Points & Class Performance Buttons -->
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5 pt-2 border-t border-slate-800" onclick="event.stopPropagation()">
+              <button onclick="addScore(${idx}, 1, 0, 'Quick Answer (+1)')" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-emerald-600 text-xs font-bold text-emerald-300 hover:text-white transition border border-slate-700">
+                +1 pt
+              </button>
+              <button onclick="addScore(${idx}, 2, 0, 'Spelling / Verse (+2)')" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-emerald-600 text-xs font-bold text-emerald-300 hover:text-white transition border border-slate-700">
+                +2 pts
+              </button>
+              <button onclick="addScore(${idx}, 5, 1, 'On-Time / Past Review (+5)')" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-emerald-600 text-xs font-bold text-amber-300 hover:text-white transition border border-slate-700" title="On-time Attendance or Past Memorization">
+                ⏰ +5
+              </button>
+              <button onclick="addScore(${idx}, 10, 2, 'Super Star Answer (+10)')" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-amber-500 text-xs font-bold text-amber-400 hover:text-slate-950 transition border border-slate-700">
+                🌟 +10
+              </button>
+              <button onclick="addScore(${idx}, 0, 1, 'Bonus Gem (+1 💎)')" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-cyan-600 text-xs font-bold text-cyan-300 hover:text-white transition border border-slate-700">
+                +1 💎
+              </button>
+              <button onclick="penalizeSleep(${idx})" class="py-1.5 px-2 rounded-lg bg-rose-950/70 hover:bg-rose-600 text-xs font-bold text-rose-300 hover:text-white transition border border-rose-700/50" title="Daydreaming or Sleeping Penalty!">
+                😴 -3
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const activeSt = students[activeStudentIndex];
+      document.getElementById('active-student-banner').textContent = `🎯 ${activeSt.avatar} ${activeSt.nameEn} (${activeSt.nameAr})`;
+    }
+
+    function selectStudent(idx) {
+      activeStudentIndex = idx;
+      renderStudents();
+    }
+
+    function pickRandomStudent() {
+      const idx = Math.floor(Math.random() * students.length);
+      activeStudentIndex = idx;
+      playTone(600, 'sine', 0.15, 0);
+      renderStudents();
+      showToast('🎲 Random Challenger Selected!', `${students[idx].nameEn} (${students[idx].nameAr}), it's your turn!`, '🎯');
+    }
+
+    function addScore(idx, pts, gems, reason) {
+      students[idx].points += pts;
+      students[idx].gems += gems;
+      if (pts > 0 || gems > 0) {
+        students[idx].streak += 1;
+        if (pts >= 5 || gems >= 2 || students[idx].streak % 3 === 0) {
+          triggerMegaParty(`${students[idx].nameEn} (${students[idx].nameAr}) +${pts} pts ${gems > 0 ? '& +' + gems + ' 💎' : ''}! (${reason})`, students[idx].avatar);
+        } else {
+          playSuccessSound();
+          fireConfettiBurst(70);
+        }
+      }
+      renderStudents();
+      logAction(`${students[idx].avatar} ${students[idx].nameEn} earned ${pts > 0 ? '+' + pts + ' pts' : ''} ${gems > 0 ? '+' + gems + ' 💎' : ''} (${reason})`);
+      showToast(`${students[idx].avatar} ${students[idx].nameEn} (${students[idx].nameAr})`, `${reason}: ${pts > 0 ? '+' + pts + ' pts ' : ''}${gems > 0 ? '+' + gems + ' 💎' : ''}`, '🎉');
+    }
+
+    function penalizeSleep(idx) {
+      students[idx].points = Math.max(0, students[idx].points - 3);
+      students[idx].streak = 0;
+      playPenaltySound();
+      renderStudents();
+      logAction(`⚠️ ${students[idx].nameEn} lost -3 pts (Daydreaming / Sleeping Alert! 😴)`);
+      showToast(`😴 Wake Up ${students[idx].nameEn}!`, `-3 Points deducted for daydreaming or losing focus!`, '⏰');
+    }
+
+    function resetAllScores() {
+      students.forEach(s => { s.points = 0; s.gems = 0; s.streak = 0; });
+      renderStudents();
+      logAction('🔄 All student scores and gems reset for a new round.');
+      showToast('Scores Reset', 'All 3 contestants start fresh at 0!', '🔄');
+    }
+
+    function logAction(text) {
+      const box = document.getElementById('action-log');
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const item = document.createElement('div');
+      item.className = 'py-1 border-b border-slate-800/80 flex items-center justify-between';
+      item.innerHTML = `<span>${text}</span><span class="text-[10px] text-slate-500">${time}</span>`;
+      box.prepend(item);
+    }
+
+    // ==========================================
+    // 4. QURAN & TASHKEEL SPELLING LAB
+    // ==========================================
+    function setQuestionStake(val) {
+      currentStake = val;
+      [1, 2, 5, 10].forEach(v => {
+        const btn = document.getElementById('stake-' + v);
+        if (v === val) {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 shadow';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300';
+        }
+      });
+      document.getElementById('btn-stake-val').textContent = val;
+      document.getElementById('word-difficulty-badge').textContent = `Reward: +${val} pts & +1 💎`;
+    }
+
+    function renderWordLab() {
+      const pills = document.getElementById('word-pills');
+      pills.innerHTML = wordsList.map((w, i) => `
+        <button onclick="selectWord(${i})" class="px-3 py-1.5 rounded-xl font-arabic text-base font-bold transition border ${i === currentWordIndex ? 'bg-indigo-600 text-white border-indigo-400 shadow' : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700'}">
+          ${w.word}
+        </button>
+      `).join('');
+
+      const item = wordsList[currentWordIndex];
+      document.getElementById('word-category-badge').textContent = item.category;
+      document.getElementById('word-arabic-display').textContent = item.word;
+      document.getElementById('word-translit').textContent = item.translit;
+      document.getElementById('word-meaning-en').textContent = `English Meaning: ${item.meaningEn}`;
+      const arEl = document.getElementById('word-meaning-ar');
+      arEl.textContent = `الشرح بالعربية: ${item.meaningAr}`;
+      arEl.classList.toggle('hidden', !showArabicTranslation);
+
+      const sylContainer = document.getElementById('word-syllables');
+      sylContainer.innerHTML = item.syllables.map((syl, sIdx) => `
+        <button onclick="highlightSyllable(this, ${sIdx})" class="letter-tile px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-amber-500 hover:text-slate-950 border border-slate-600 font-arabic text-2xl md:text-3xl font-bold text-amber-200 shadow">
+          ${syl}
+        </button>
+      `).join('');
+    }
+
+    function highlightSyllable(btn, sIdx) {
+      playTone(420 + sIdx * 65, 'sine', 0.14, 0);
+      btn.classList.toggle('bg-emerald-500');
+      btn.classList.toggle('text-slate-950');
+      btn.classList.toggle('border-emerald-300');
+    }
+
+    function selectWord(i) {
+      currentWordIndex = i;
+      renderWordLab();
+    }
+
+    function nextWord() {
+      currentWordIndex = (currentWordIndex + 1) % wordsList.length;
+      renderWordLab();
+    }
+
+    function prevWord() {
+      currentWordIndex = (currentWordIndex - 1 + wordsList.length) % wordsList.length;
+      renderWordLab();
+    }
+
+    function awardCurrentStake(withGem) {
+      const item = wordsList[currentWordIndex];
+      addScore(activeStudentIndex, currentStake, withGem ? 1 : 0, `Mastered «${item.word}»`);
+    }
+
+    // ==========================================
+    // 5. LESSON VERSES & COMPREHENSION QUIZ
+    // ==========================================
+    function renderVerseLab() {
+      const v = versesList[currentVerseIndex];
+      document.getElementById('verse-counter').textContent = `Verse ${currentVerseIndex + 1} of ${versesList.length}`;
+      document.getElementById('verse-arabic-text').textContent = v.arabic;
+      document.getElementById('verse-english-text').textContent = v.english;
+      document.getElementById('verse-vocab-note').textContent = v.vocab;
+      document.getElementById('verse-quiz-q').textContent = v.question;
+      document.getElementById('verse-quiz-status').textContent = `Active Challenger: ${students[activeStudentIndex].nameEn}`;
+
+      const optsBox = document.getElementById('verse-quiz-options');
+      optsBox.innerHTML = v.options.map((opt, oIdx) => `
+        <button onclick="checkVerseQuizAnswer(${oIdx}, this)" class="p-3 rounded-xl bg-slate-900 hover:bg-indigo-950 border border-slate-700 text-left text-xs md:text-sm font-semibold text-slate-200 transition">
+          ${String.fromCharCode(65 + oIdx)}. ${opt}
+        </button>
+      `).join('');
+    }
+
+    function awardVerseRecitation(studentIdx) {
+      addScore(studentIdx, 2, 0, `Recited Verse ${currentVerseIndex + 1}`);
+    }
+
+    function checkVerseQuizAnswer(selectedIdx, btnEl) {
+      const v = versesList[currentVerseIndex];
+      if (selectedIdx === v.correct) {
+        btnEl.className = 'p-3 rounded-xl bg-emerald-600 border border-emerald-300 text-left text-xs md:text-sm font-bold text-white';
+        addScore(activeStudentIndex, 2, 1, `Correct Verse Quiz Answer`);
+      } else {
+        btnEl.className = 'p-3 rounded-xl bg-rose-700 border border-rose-400 text-left text-xs md:text-sm font-bold text-white';
+        playPenaltySound();
+        showToast('Try Again!', 'That option is not correct—let another contestant try!', '❌');
+      }
+    }
+
+    function nextVerse() {
+      currentVerseIndex = (currentVerseIndex + 1) % versesList.length;
+      renderVerseLab();
+    }
+
+    function prevVerse() {
+      currentVerseIndex = (currentVerseIndex - 1 + versesList.length) % versesList.length;
+      renderVerseLab();
+    }
+
+    // ==========================================
+    // 6. RIDDLES & JOKES
+    // ==========================================
+    function renderRiddleAndJoke() {
+      const r = riddlesList[currentRiddleIndex];
+      document.getElementById('riddle-en').textContent = r.qEn;
+      const rAr = document.getElementById('riddle-ar');
+      rAr.textContent = r.qAr;
+      rAr.classList.toggle('hidden', !showArabicTranslation);
+      document.getElementById('riddle-ans-text').textContent = r.ans;
+      document.getElementById('riddle-answer-box').classList.add('hidden');
+
+      const j = jokesList[currentJokeIndex];
+      document.getElementById('joke-setup-en').textContent = j.setupEn;
+      const jAr = document.getElementById('joke-setup-ar');
+      jAr.textContent = j.setupAr;
+      jAr.classList.toggle('hidden', !showArabicTranslation);
+      document.getElementById('joke-punch-en').textContent = j.punchEn;
+      const jpAr = document.getElementById('joke-punch-ar');
+      jpAr.textContent = j.punchAr;
+      jpAr.classList.toggle('hidden', !showArabicTranslation);
+    }
+
+    function revealRiddleAnswer() {
+      playTone(700, 'triangle', 0.2, 0);
+      document.getElementById('riddle-answer-box').classList.remove('hidden');
+    }
+
+    function nextRiddle() {
+      currentRiddleIndex = (currentRiddleIndex + 1) % riddlesList.length;
+      renderRiddleAndJoke();
+    }
+
+    function awardRiddleWinner() {
+      addScore(activeStudentIndex, 5, 1, 'Solved Brain Riddle (فزورة)');
+    }
+
+    function nextJoke() {
+      currentJokeIndex = (currentJokeIndex + 1) % jokesList.length;
+      renderRiddleAndJoke();
+      playTone(520, 'sine', 0.12, 0);
+    }
+
+    // ==========================================
+    // 7. MYSTERY GIFTS & RANDOM LUCKY DRAW
+    // ==========================================
+    const possiblePrizes = [
+      { label: "💎 +3 Royal Gems!", pts: 0, gems: 3, icon: "💎" },
+      { label: "🌟 +5 Golden Points!", pts: 5, gems: 0, icon: "🌟" },
+      { label: "👑 +10 Mega Jackpot Points!", pts: 10, gems: 1, icon: "👑" },
+      { label: "🎁 +2 Points & +2 Gems!", pts: 2, gems: 2, icon: "🎁" },
+      { label: "🚀 +7 Turbo Boost Points!", pts: 7, gems: 1, icon: "🚀" },
+      { label: "🍬 +3 Sweet Bonus Points!", pts: 3, gems: 1, icon: "🍬" }
+    ];
+
+    function resetGiftBoxes() {
+      const shuffled = [...possiblePrizes].sort(() => Math.random() - 0.5);
+      giftBoxes = shuffled.map((p, i) => ({
+        id: i,
+        opened: false,
+        prize: p
+      }));
+      renderGiftBoxes();
+    }
+
+    function renderGiftBoxes() {
+      const grid = document.getElementById('gift-boxes-grid');
+      grid.innerHTML = giftBoxes.map((b, idx) => {
+        if (b.opened) {
+          return `
+            <div class="p-4 rounded-2xl bg-slate-900/90 border-2 border-amber-400/60 text-center animate-pop">
+              <div class="text-3xl mb-1">${b.prize.icon}</div>
+              <div class="text-xs font-extrabold text-amber-300">${b.prize.label}</div>
+              <div class="text-[11px] text-slate-400 mt-1">Claimed by ${b.claimedBy}</div>
+            </div>
+          `;
+        }
+        return `
+          <button onclick="openGiftBox(${idx})" class="p-5 rounded-2xl bg-gradient-to-br from-indigo-900/80 to-purple-900/80 hover:from-indigo-800 hover:to-purple-800 border-2 border-indigo-400/40 text-center transition transform hover:-translate-y-1 shadow-lg">
+            <div class="text-4xl mb-1">🎁</div>
+            <div class="text-xs font-extrabold text-white">Mystery Chest #${idx + 1}</div>
+            <div class="text-[11px] text-indigo-300 mt-0.5">Tap to Open for ${students[activeStudentIndex].nameEn}</div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function openGiftBox(idx) {
+      if (giftBoxes[idx].opened) return;
+      const st = students[activeStudentIndex];
+      giftBoxes[idx].opened = true;
+      giftBoxes[idx].claimedBy = st.nameEn;
+      const p = giftBoxes[idx].prize;
+      addScore(activeStudentIndex, p.pts, p.gems, `Mystery Chest #${idx + 1}: ${p.label}`);
+      renderGiftBoxes();
+    }
+
+    function triggerLuckyDraw() {
+      const winnerIdx = Math.floor(Math.random() * students.length);
+      const prize = possiblePrizes[Math.floor(Math.random() * possiblePrizes.length)];
+      activeStudentIndex = winnerIdx;
+      const st = students[winnerIdx];
+      document.getElementById('lucky-draw-result').innerHTML = `🎉 Lucky Winner: <span class="text-amber-300">${st.nameEn} (${st.nameAr})</span> won <span class="text-emerald-300">${prize.label}</span>!`;
+      addScore(winnerIdx, prize.pts, prize.gems, 'Random Lucky Draw Spin');
+    }
+
+    // ==========================================
+    // 8. MINI-GAMES (3-PLAYER CONNECT 4 & X-O)
+    // ==========================================
+    let c4Board = [];
+    let c4Turn = 0; // 0: Abdulmalik, 1: Ghaniya, 2: Mohammed
+    let c4GameOver = false;
+
+    function initConnect4() {
+      c4Board = Array.from({ length: 6 }, () => Array(7).fill(null));
+      c4Turn = 0;
+      c4GameOver = false;
+      renderConnect4();
+    }
+
+    function renderConnect4() {
+      const colors = ['🔴', '🌸', '🟢'];
+      const st = students[c4Turn];
+      document.getElementById('c4-turn-indicator').textContent = c4GameOver
+        ? 'Game Over! Click Reset Board to play again.'
+        : `Turn: ${st.nameEn} (${colors[c4Turn]}) — Click any column!`;
+
+      const grid = document.getElementById('c4-grid');
+      let html = '';
+      for (let r = 0; r < 6; r++) {
+        for (let c = 0; c < 7; c++) {
+          const val = c4Board[r][c];
+          const bg = val === 0 ? 'bg-rose-500 shadow-lg' : val === 1 ? 'bg-pink-400 shadow-lg' : val === 2 ? 'bg-emerald-400 shadow-lg' : 'bg-slate-900/90 hover:bg-slate-800';
+          html += `<button onclick="dropC4Disc(${c})" class="w-9 h-9 sm:w-11 sm:h-11 rounded-full ${bg} border border-indigo-400/30 transition flex items-center justify-center text-sm font-bold"></button>`;
+        }
+      }
+      grid.innerHTML = html;
+    }
+
+    function dropC4Disc(col) {
+      if (c4GameOver) return;
+      for (let r = 5; r >= 0; r--) {
+        if (c4Board[r][col] === null) {
+          c4Board[r][col] = c4Turn;
+          playTone(350 + c4Turn * 90, 'sine', 0.1, 0);
+          if (checkC4Win(r, col, c4Turn)) {
+            c4GameOver = true;
+            renderConnect4();
+            addScore(c4Turn, 5, 2, 'Won Connect 4 Championship!');
+            return;
+          }
+          c4Turn = (c4Turn + 1) % 3;
+          renderConnect4();
+          return;
+        }
+      }
+    }
+
+    function checkC4Win(r, c, player) {
+      const dirs = [[0,1], [1,0], [1,1], [1,-1]];
+      for (const [dr, dc] of dirs) {
+        let count = 1;
+        for (let step = 1; step < 4; step++) {
+          const nr = r + dr * step, nc = c + dc * step;
+          if (nr >= 0 && nr < 6 && nc >= 0 && nc < 7 && c4Board[nr][nc] === player) count++;
+          else break;
+        }
+        for (let step = 1; step < 4; step++) {
+          const nr = r - dr * step, nc = c - dc * step;
+          if (nr >= 0 && nr < 6 && nc >= 0 && nc < 7 && c4Board[nr][nc] === player) count++;
+          else break;
+        }
+        if (count >= 4) return true;
+      }
+      return false;
+    }
+
+    // X-O Game
+    let xoBoard = Array(9).fill(null);
+    let xoTurn = '❌';
+    let xoOver = false;
+
+    function initXO() {
+      xoBoard = Array(9).fill(null);
+      xoTurn = '❌';
+      xoOver = false;
+      renderXO();
+    }
+
+    function renderXO() {
+      document.getElementById('xo-turn-indicator').textContent = xoOver ? 'Round Complete!' : `Turn: ${xoTurn} (Active Student: ${students[activeStudentIndex].nameEn})`;
+      const grid = document.getElementById('xo-grid');
+      grid.innerHTML = xoBoard.map((cell, i) => `
+        <button onclick="playXOCell(${i})" class="rounded-xl bg-slate-800 hover:bg-slate-700 text-2xl font-black flex items-center justify-center border border-slate-600">
+          ${cell || ''}
+        </button>
+      `).join('');
+    }
+
+    function playXOCell(i) {
+      if (xoOver || xoBoard[i]) return;
+      xoBoard[i] = xoTurn;
+      playTone(500, 'triangle', 0.1, 0);
+      const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+      for (const [a,b,c] of lines) {
+        if (xoBoard[a] && xoBoard[a] === xoBoard[b] && xoBoard[a] === xoBoard[c]) {
+          xoOver = true;
+          renderXO();
+          addScore(activeStudentIndex, 5, 1, `Won X-O Duel (${xoTurn})`);
+          return;
+        }
+      }
+      xoTurn = xoTurn === '❌' ? '⭕' : '❌';
+      renderXO();
+    }
+
+    function switchMiniGame(which) {
+      const c4Box = document.getElementById('mg-connect4-box');
+      const xoBox = document.getElementById('mg-xo-box');
+      const b1 = document.getElementById('btn-mg-c4');
+      const b2 = document.getElementById('btn-mg-xo');
+      if (which === 'connect4') {
+        c4Box.classList.remove('hidden');
+        xoBox.classList.add('hidden');
+        b1.className = 'px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-extrabold transition';
+        b2.className = 'px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold transition';
+      } else {
+        c4Box.classList.add('hidden');
+        xoBox.classList.remove('hidden');
+        xoBox.classList.add('flex');
+        b2.className = 'px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-extrabold transition';
+        b1.className = 'px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold transition';
+      }
+    }
+
+    // ==========================================
+    // 9. TABS, MODALS, CUSTOM EDITOR & PODIUM
+    // ==========================================
+    function switchTab(tab) {
+      const tabs = ['words', 'verses', 'riddles', 'gifts', 'minigame'];
+      tabs.forEach(t => {
+        document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById('tab-' + t);
+        if (t === tab) {
+          btn.className = 'flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow';
+        } else {
+          btn.className = 'flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition flex items-center justify-center gap-1.5 text-slate-300 hover:bg-slate-800';
+        }
+      });
+    }
+
+    function toggleLanguage() {
+      showArabicTranslation = !showArabicTranslation;
+      document.getElementById('lbl-lang-btn').textContent = showArabicTranslation
+        ? 'Hide Arabic Translation (إخفاء الترجمة)'
+        : 'Show Arabic Translation (إظهار الترجمة)';
+      renderWordLab();
+      renderRiddleAndJoke();
+    }
+
+    function openVerseEditorModal() {
+      const vText = versesList.map(v => `${v.arabic} | ${v.english} | ${v.vocab}`).join('\n');
+      const wText = wordsList.map(w => `${w.word} | ${w.translit} | ${w.meaningEn}`).join('\n');
+      document.getElementById('input-custom-verses').value = vText;
+      document.getElementById('input-custom-words').value = wText;
+      const modal = document.getElementById('modal-editor');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeVerseEditorModal() {
+      const modal = document.getElementById('modal-editor');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function saveCustomLesson() {
+      const vLines = document.getElementById('input-custom-verses').value.split('\n').map(l => l.trim()).filter(Boolean);
+      if (vLines.length > 0) {
+        versesList = vLines.map((line, idx) => {
+          const parts = line.split('|').map(p => p.trim());
+          const ar = parts[0] || line;
+          const en = parts[1] || 'Recite with full Tashkeel and clear pronunciation!';
+          const voc = parts[2] || 'Key Arabic Vocabulary & Grammar';
+          return {
+            arabic: ar,
+            english: en,
+            vocab: voc,
+            question: `In Verse ${idx + 1}, can you explain and spell the words of: «${ar.split(' ').slice(0, 3).join(' ')}...»?`,
+            options: [
+              `Correct! Clear pronunciation & meaning (${voc})`,
+              'Needs another try on the Harakat',
+              'Missed the Shaddah / Madd',
+              'Pass turn to another student'
+            ],
+            correct: 0
+          };
+        });
+        currentVerseIndex = 0;
+      }
+
+      const wLines = document.getElementById('input-custom-words').value.split('\n').map(l => l.trim()).filter(Boolean);
+      if (wLines.length > 0) {
+        wordsList = wLines.map(line => {
+          const parts = line.split('|').map(p => p.trim());
+          const word = parts[0] || line;
+          const tr = parts[1] || 'Spell aloud letter by letter with Harakat';
+          const mn = parts[2] || 'Quranic & Classical Arabic Vocabulary';
+          // Split word into visual chunks for interactive spelling
+          const chars = Array.from(word);
+          const chunks = [];
+          let cur = '';
+          chars.forEach(ch => {
+            if (/[\u064B-\u065F\u0670]/.test(ch)) {
+              cur += ch;
+            } else {
+              if (cur) chunks.push(cur);
+              cur = ch;
+            }
+          });
+          if (cur) chunks.push(cur);
+          return {
+            word,
+            translit: tr,
+            meaningEn: mn,
+            meaningAr: mn,
+            category: 'Custom Teacher Word',
+            syllables: chunks.length ? chunks : [word]
+          };
+        });
+        currentWordIndex = 0;
+      }
+
+      renderWordLab();
+      renderVerseLab();
+      closeVerseEditorModal();
+      showToast('✅ Lesson Updated!', 'Your new verses & Tashkeel words are now live!', '📚');
+    }
+
+    function openPodiumModal() {
+      const sorted = [...students].sort((a, b) => (b.points + b.gems * 2) - (a.points + a.gems * 2));
+      const podiumBox = document.getElementById('podium-cards');
+      const medals = ['🥇 1st Place Champion', '🥈 2nd Place Star', '🥉 3rd Place Hero'];
+      const heights = ['md:py-8 border-amber-400 gold-glow bg-amber-500/15', 'md:py-6 border-slate-400 bg-slate-800/80', 'md:py-5 border-orange-500/50 bg-orange-950/30'];
+
+      podiumBox.innerHTML = sorted.map((st, rankIdx) => {
+        const totalScore = st.points + st.gems * 2;
+        return `
+          <div class="rounded-2xl p-5 border-2 ${heights[rankIdx]} flex flex-col items-center">
+            <div class="text-xs font-extrabold uppercase tracking-wider text-amber-300 mb-2">${medals[rankIdx]}</div>
+            <div class="text-4xl mb-2">${st.avatar}</div>
+            <div class="text-xl font-black text-white">${st.nameEn}</div>
+            <div class="font-arabic text-lg text-amber-200 mb-3">${st.nameAr} ${st.avatar}</div>
+            <div class="text-2xl font-black text-amber-400">${st.points} pts</div>
+            <div class="text-xs text-cyan-300 font-bold mt-1">+ 💎 ${st.gems} Gems (Total Power: ${totalScore})</div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('podium-summary-text').innerHTML = `
+        🏆 Congratulations to today's 1st Place Champion <strong class="text-amber-300">${sorted[0].nameEn} (${sorted[0].nameAr})</strong>,
+        2nd Place <strong class="text-white">${sorted[1].nameEn}</strong>, and 3rd Place <strong class="text-white">${sorted[2].nameEn}</strong>!
+        <span class="block mt-1 text-emerald-300">Note: Each Gem (💎) adds +2 Bonus Power Points to the final championship ranking!</span>
+      `;
+
+      const modal = document.getElementById('modal-podium');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      playFanfare();
+    }
+
+    function closePodiumModal() {
+      const modal = document.getElementById('modal-podium');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    let toastTimer = null;
+    function showToast(title, msg, icon = '🌟') {
+      const box = document.getElementById('toast-box');
+      document.getElementById('toast-title').textContent = title;
+      document.getElementById('toast-msg').textContent = msg;
+      document.getElementById('toast-icon').textContent = icon;
+      box.classList.remove('hidden');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        box.classList.add('hidden');
+      }, 3200);
+    }
+
+    // Initialize everything on load
+    window.onload = function () {
+      renderStudents();
+      renderWordLab();
+      renderVerseLab();
+      renderRiddleAndJoke();
+      resetGiftBoxes();
+      initConnect4();
+      initXO();
+      logAction('🚀 Welcome Abdulmalik 🏋️‍♂️💪, Dr. Ghaniya 👩‍⚕️🩺 & Smart Mohammed 🧠🚀 to Faseeh Academy!');
+    };
+  </script>
+</body>
+</html>
